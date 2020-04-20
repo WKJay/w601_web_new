@@ -1,6 +1,17 @@
 <template>
-  <div id="app">
-
-    <h1>Welcome to Your Vue.js App</h1>
-  </div>
+    <wContent />
 </template>
+
+<style>
+
+</style>
+
+<script>
+  import wContent from '@/components/content'
+
+  export default {
+    components: {
+      wContent
+    }
+  }
+</script>
