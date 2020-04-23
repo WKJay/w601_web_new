@@ -4,7 +4,7 @@
         <wHead />
         
         <!-- content -->
-        <b-container fluid style="padding-top:60px">
+        <b-container fluid style="padding-top:80px">
             <router-view />
         </b-container>
 
