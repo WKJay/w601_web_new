@@ -31,10 +31,34 @@
           </b-card>
         </b-col>
       </b-row>
-      <b-card style="margin-top:20px">
+      <div class="dataTable">
+        <b-card style="margin-top:20px;">
+          <b-card-title>
+            <b-row>
+              <b-col>
+                <span>数据记录</span>
+              </b-col>
+              <b-col>
+                <div style="text-align:right;">
+                  <b-button @click="recordPrev" :disabled="recordLoading"> ‹ </b-button>
+                  &nbsp;
+                  <b-button @click="recordNext" :disabled="recordLoading"> › </b-button>
+                </div>
 
-      </b-card>
-
+              </b-col>
+            </b-row>
+          </b-card-title>
+          <b-card-sub-title>
+            <span>
+              {{recordDateStr}}
+              {{recordHasData?'':'无数据'}}
+            </span>
+          </b-card-sub-title>
+          <div style="height:400px">
+            <v-chart :options="options_5" class="card-chart" autoresize />
+          </div>
+        </b-card>
+      </div>
     </b-col>
   </div>
 </template>
@@ -43,8 +67,11 @@
   import ECharts from 'vue-echarts'
   import 'echarts/lib/chart/line'
   import 'echarts/lib/component/tooltip'
-  import 'echarts/lib/chart/pie'
-
+  import 'echarts/lib/component/title'
+  import 'echarts/lib/component/axis'
+  import 'echarts/lib/component/axisPointer'
+  import 'echarts/lib/chart/bar'
+  import csv from 'jquery-csv/src/jquery.csv.min.js'
   export default {
     components: {
       'v-chart': ECharts
@@ -82,7 +109,7 @@
           series: [{
             data: [],
             type: 'line',
-            smooth: true
+            smooth: true,
           }],
           color: "#ced2d8",
           tooltip: {
@@ -203,15 +230,108 @@
             trigger: 'item'
           },
         },
+        options_5: {
+          grid: {
+            left: '2%',
+            right: '2%',
+            bottom: '3%',
+            containLabel: true
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              label: {
+                backgroundColor: '#6a7985'
+              }
+            }
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: true,
+            data: []
+          },
+          yAxis: [{
+            type: 'value',
+            name: '温度',
+            axisLabel: {
+              formatter: '{value} °C',
+            }
+          }, {
+            type: 'value',
+            name: '湿度',
+            axisLabel: {
+              formatter: '{value} %'
+            }
+          }, {
+            type: 'value',
+            name: '光照',
+            position: 'right',
+            offset: 50,
+            axisLabel: {
+              formatter: '{value} Lux'
+            }
+          }],
+          series: [{
+            name: '温度',
+            data: [],
+            type: 'line',
+            symbol: 'none',
+            areaStyle: {
+              color: 'rgba(102,102,153,.3)'
+            },
+            color: '#666699',
+            smooth: true,
+          }, {
+            name: '湿度',
+            data: [],
+            yAxisIndex: 1,
+            symbol: 'none',
+            type: 'line',
+            color: '#660000',
+            lineStyle: {
+              type: 'dotted'
+            },
+            smooth: true,
+          }, {
+            name: '光照强度',
+            data: [],
+            yAxisIndex: 2,
+            type: 'bar',
+            color: 'rgba(153,102,102,.5)',
+
+          }]
+        },
         tempTimer: null,
         curTemp: 0,
         curHumi: 0,
         curMem: 0,
         curLight: 0,
         maxMem: 0,
+        recordYear: 0,
+        recordMonth: 0,
+        recordDate: 0,
+        recordHasData:false,
+        recordLoading:true,
       }
     },
     methods: {
+      timeShow(time) {
+        return time < 10 ? ('0' + time) : time;
+      },
+      initDate() {
+        let cur_date = new Date();
+        this.recordYear = cur_date.getFullYear();
+        this.recordMonth = cur_date.getMonth() + 1;
+        this.recordDate = cur_date.getDate();
+      },
+      getScreenSize() {
+        if (this.smallScreen) {
+
+
+          this.options_5.yAxis[2].axisLabel.show = false;
+        }
+      },
       getAhtData() {
         this.axios({
           method: 'get',
@@ -238,6 +358,76 @@
             this.options_4.series[0].data.push(data.data.light);
           }
         }).catch(() => {});
+      },
+      getSavedData() {
+        let url =
+          `/data/${this.recordYear}/${this.recordMonth}/${this.recordDate}.csv`;
+
+        this.options_5.series[0].data = [];
+        this.options_5.series[1].data = [];
+        this.options_5.series[2].data = [];
+        this.options_5.xAxis.data = [];
+
+        this.recordLoading = true;
+        this.axios({
+          method: 'get',
+          url,
+          timeout: 1000,
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        }).then((data) => {
+          let jsonObj = csv.toObjects(data.data);
+          this.recordHasData = true;
+          for (let item in jsonObj) {
+            let itemTime = new Date(parseInt(jsonObj[item].time) * 1000);
+            let itemTimeStr = `${this.timeShow(itemTime.getUTCHours())}:${this.timeShow(itemTime.getUTCMinutes())}`;
+
+            this.options_5.series[0].data.push(jsonObj[item].temp);
+            this.options_5.series[1].data.push(jsonObj[item].humi);
+            this.options_5.series[2].data.push(jsonObj[item].light);
+            this.options_5.xAxis.data.push(itemTimeStr);
+          }
+
+           this.recordLoading = false;
+        }).catch(() => {
+          this.recordHasData = false;
+          this.recordLoading = false;
+        })
+        
+      },
+      recordPrev() {
+        if (this.recordDate > 1) {
+          this.recordDate--;
+        } else {
+          if (this.recordMonth > 1) {
+            this.recordMonth--;
+            this.recordDate = new Date(this.recordYear, this.recordMonth, 0).getDate();
+          } else {
+            if (this.recordYear > 1900) {
+              this.recordYear--;
+              this.recordMonth = 12;
+              this.recordDate = new Date(this.recordYear, this.recordMonth, 0).getDate();
+            }
+          }
+        }
+        this.getSavedData();
+      },
+      recordNext() {
+        let maxDate = new Date(this.recordYear, this.recordMonth, 0).getDate();
+        if (this.recordDate < maxDate) {
+          this.recordDate++;
+        } else {
+          if (this.recordMonth < 12) {
+            this.recordMonth++;
+            this.recordDate = 1;
+          } else {
+            this.recordYear++;
+            this.recordMonth = 1;
+            this.recordDate = 1;
+          }
+        }
+        this.getSavedData();
       }
     },
     computed: {
@@ -245,23 +435,28 @@
         return `${this.curTemp} ℃`;
       },
       humiData() {
-        return `${this.curHumi} ℃`;
+        return `${this.curHumi} %`;
       },
       usedMem() {
         return `${this.curMem} B`;
       },
       lightData() {
         return `${this.curLight} Lux`;
+      },
+      recordDateStr() {
+        return `${this.recordYear}/${this.recordMonth}/${this.recordDate}`;
+      },
+      smallScreen() {
+        return document.body.clientWidth < 800 ? true : false;
       }
     },
     created() {
-      console.log('create');
-
+      this.initDate();
+      this.getScreenSize();
+      this.getSavedData();
       this.tempTimer = window.setInterval(this.getAhtData, 1100);
     },
     destroyed() {
-      console.log('des');
-
       window.clearInterval(this.tempTimer);
     }
   }
@@ -295,6 +490,14 @@
 
   .text-muted {
     color: white !important;
+  }
+
+  .dataTable>.card>.card-body>.card-title {
+    color: #3c4b64;
+  }
+
+  .dataTable>.card>.card-body>.text-muted {
+    color: #979fad !important;
   }
 
   .card-chart {

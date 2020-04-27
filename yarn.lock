@@ -4659,6 +4659,11 @@ jest-worker@^25.1.0:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
+jquery-csv@^1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/jquery-csv/-/jquery-csv-1.0.11.tgz#1eeb689d4a11e9467c31b9bb426260b8acd326a6"
+  integrity sha512-KDPc3wFLTFO68p/4IqsODZCjBp+y9axDa/pr36pDKrWk6yyHf8Nk1FqAGXvaUb6H7J1zJSYszABIFj0a40QXRA==
+
 js-message@1.0.5:
   version "1.0.5"
   resolved "https://registry.npm.taobao.org/js-message/download/js-message-1.0.5.tgz#2300d24b1af08e89dd095bc1a4c9c9cfcb892d15"
