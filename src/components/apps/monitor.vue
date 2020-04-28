@@ -32,32 +32,34 @@
         </b-col>
       </b-row>
       <div class="dataTable">
-        <b-card style="margin-top:20px;">
-          <b-card-title>
-            <b-row>
-              <b-col>
-                <span>数据记录</span>
-              </b-col>
-              <b-col>
-                <div style="text-align:right;">
-                  <b-button @click="recordPrev" :disabled="recordLoading"> ‹ </b-button>
-                  &nbsp;
-                  <b-button @click="recordNext" :disabled="recordLoading"> › </b-button>
-                </div>
+        <b-overlay :show="recordLoading" rounded="sm">
+          <b-card style="margin-top:20px;">
+            <b-card-title>
+              <b-row>
+                <b-col>
+                  <span>数据记录</span>
+                </b-col>
+                <b-col>
+                  <div style="text-align:right;">
+                    <b-button @click="recordPrev" :disabled="recordLoading"> ‹ </b-button>
+                    &nbsp;
+                    <b-button @click="recordNext" :disabled="recordLoading"> › </b-button>
+                  </div>
 
-              </b-col>
-            </b-row>
-          </b-card-title>
-          <b-card-sub-title>
-            <span>
-              {{recordDateStr}}
-              {{recordHasData?'':'无数据'}}
-            </span>
-          </b-card-sub-title>
-          <div style="height:400px">
-            <v-chart :options="options_5" class="card-chart" autoresize />
-          </div>
-        </b-card>
+                </b-col>
+              </b-row>
+            </b-card-title>
+            <b-card-sub-title>
+              <span>
+                {{recordDateStr}}
+                {{recordHasData?'':'无数据'}}
+              </span>
+            </b-card-sub-title>
+            <div style="height:400px">
+              <v-chart :options="options_5" class="card-chart" autoresize />
+            </div>
+          </b-card>
+        </b-overlay>
       </div>
     </b-col>
   </div>
@@ -69,6 +71,7 @@
   import 'echarts/lib/component/tooltip'
   import 'echarts/lib/component/title'
   import 'echarts/lib/component/axis'
+  import 'echarts/lib/component/legend'
   import 'echarts/lib/component/axisPointer'
   import 'echarts/lib/chart/bar'
   import csv from 'jquery-csv/src/jquery.csv.min.js'
@@ -237,6 +240,9 @@
             bottom: '3%',
             containLabel: true
           },
+          legend:{
+
+          },
           tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -311,8 +317,8 @@
         recordYear: 0,
         recordMonth: 0,
         recordDate: 0,
-        recordHasData:false,
-        recordLoading:true,
+        recordHasData: false,
+        recordLoading: true,
       }
     },
     methods: {
@@ -327,8 +333,6 @@
       },
       getScreenSize() {
         if (this.smallScreen) {
-
-
           this.options_5.yAxis[2].axisLabel.show = false;
         }
       },
@@ -363,11 +367,6 @@
         let url =
           `/data/${this.recordYear}/${this.recordMonth}/${this.recordDate}.csv`;
 
-        this.options_5.series[0].data = [];
-        this.options_5.series[1].data = [];
-        this.options_5.series[2].data = [];
-        this.options_5.xAxis.data = [];
-
         this.recordLoading = true;
         this.axios({
           method: 'get',
@@ -378,6 +377,10 @@
           }
         }).then((data) => {
           let jsonObj = csv.toObjects(data.data);
+          this.options_5.series[0].data = [];
+          this.options_5.series[1].data = [];
+          this.options_5.series[2].data = [];
+          this.options_5.xAxis.data = [];
           this.recordHasData = true;
           for (let item in jsonObj) {
             let itemTime = new Date(parseInt(jsonObj[item].time) * 1000);
@@ -389,12 +392,16 @@
             this.options_5.xAxis.data.push(itemTimeStr);
           }
 
-           this.recordLoading = false;
+          this.recordLoading = false;
         }).catch(() => {
+          this.options_5.series[0].data = [0];
+          this.options_5.series[1].data = [0];
+          this.options_5.series[2].data = [0];
+          this.options_5.xAxis.data = [0];
           this.recordHasData = false;
           this.recordLoading = false;
         })
-        
+
       },
       recordPrev() {
         if (this.recordDate > 1) {
@@ -492,11 +499,11 @@
     color: white !important;
   }
 
-  .dataTable>.card>.card-body>.card-title {
+  .dataTable>.b-overlay-wrap>.card>.card-body>.card-title {
     color: #3c4b64;
   }
 
-  .dataTable>.card>.card-body>.text-muted {
+  .dataTable>.b-overlay-wrap>.card>.card-body>.text-muted {
     color: #979fad !important;
   }
 
