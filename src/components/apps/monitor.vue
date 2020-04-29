@@ -41,9 +41,13 @@
                 </b-col>
                 <b-col>
                   <div style="text-align:right;">
-                    <b-button @click="recordPrev" :disabled="recordLoading"> ‹ </b-button>
+                    <b-button variant="outline-secondary" @click="recordPrev" :disabled="recordLoading">
+                      <b-icon-caret-left></b-icon-caret-left>
+                    </b-button>
                     &nbsp;
-                    <b-button @click="recordNext" :disabled="recordLoading"> › </b-button>
+                    <b-button variant="outline-secondary" @click="recordNext" :disabled="recordLoading">
+                      <b-icon-caret-right></b-icon-caret-right>
+                    </b-button>
                   </div>
 
                 </b-col>
@@ -240,7 +244,7 @@
             bottom: '3%',
             containLabel: true
           },
-          legend:{
+          legend: {
 
           },
           tooltip: {
@@ -371,7 +375,7 @@
         this.axios({
           method: 'get',
           url,
-          timeout: 1000,
+          timeout: 10000,
           headers: {
             'Cache-Control': 'no-cache'
           }
