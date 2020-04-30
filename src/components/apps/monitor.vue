@@ -41,11 +41,15 @@
                 </b-col>
                 <b-col>
                   <div style="text-align:right;">
+                    <b-button variant="outline-info" @click="recordRefresh" :disabled="recordLoading">
+                      刷新数据
+                    </b-button>
+                    &nbsp;
                     <b-button variant="outline-secondary" @click="recordPrev" :disabled="recordLoading">
                       <b-icon-caret-left></b-icon-caret-left>
                     </b-button>
                     &nbsp;
-                    <b-button variant="outline-secondary" @click="recordNext" :disabled="recordLoading">
+                    <b-button variant="outline-secondary" @click="recordNext" :disabled="recordLoading||isLastRecord">
                       <b-icon-caret-right></b-icon-caret-right>
                     </b-button>
                   </div>
@@ -70,6 +74,9 @@
 </template>
 
 <script>
+  //记录周期（秒）
+  const RECORD_INTERVAL_SECONDS = 60 * 10 + 5;
+
   import ECharts from 'vue-echarts'
   import 'echarts/lib/chart/line'
   import 'echarts/lib/component/tooltip'
@@ -244,9 +251,7 @@
             bottom: '3%',
             containLabel: true
           },
-          legend: {
-
-          },
+          legend: {},
           tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -321,6 +326,8 @@
         recordYear: 0,
         recordMonth: 0,
         recordDate: 0,
+        lastRecordts: 0, //最后一次记录的时标
+        recordUpdateCnt: 0, //记录连续获取次数
         recordHasData: false,
         recordLoading: true,
       }
@@ -365,13 +372,12 @@
             this.options_3.series[0].data.push(data.data.used_mem);
             this.options_4.series[0].data.push(data.data.light);
           }
+          this.checkRecordUpdate(data.data.ts)
         }).catch(() => {});
       },
       getSavedData() {
         let url =
           `/data/${this.recordYear}/${this.recordMonth}/${this.recordDate}.csv`;
-
-        this.recordLoading = true;
         this.axios({
           method: 'get',
           url,
@@ -394,6 +400,7 @@
             this.options_5.series[1].data.push(jsonObj[item].humi);
             this.options_5.series[2].data.push(jsonObj[item].light);
             this.options_5.xAxis.data.push(itemTimeStr);
+            this.lastRecordts = jsonObj[item].time;
           }
 
           this.recordLoading = false;
@@ -422,6 +429,7 @@
             }
           }
         }
+        this.recordLoading = true;
         this.getSavedData();
       },
       recordNext() {
@@ -438,6 +446,23 @@
             this.recordDate = 1;
           }
         }
+        this.recordLoading = true;
+        this.getSavedData();
+      },
+      checkRecordUpdate(ts) {
+        console.log(this.recordUpdateCnt);
+        if ((ts - this.lastRecordts) > RECORD_INTERVAL_SECONDS * (1 + this.recordUpdateCnt)) {
+          this.recordUpdateCnt++;
+          this.getSavedData();
+        } else {
+          if ((ts - this.lastRecordts) < RECORD_INTERVAL_SECONDS) {
+            this.recordUpdateCnt = 0;
+          }
+        }
+
+      },
+      recordRefresh() {
+        this.recordLoading = true;
         this.getSavedData();
       }
     },
@@ -459,6 +484,10 @@
       },
       smallScreen() {
         return document.body.clientWidth < 800 ? true : false;
+      },
+      isLastRecord() {
+        let current_date = new Date().getDate();
+        return (current_date == this.recordDate);
       }
     },
     created() {
@@ -519,5 +548,10 @@
   .card {
     box-shadow: 0 1px 1px 0 rgba(60, 75, 100, .14), 0 2px 1px -1px rgba(60, 75, 100, .12), 0 1px 3px 0 rgba(60, 75, 100, .2);
     margin-top: 10px;
+  }
+
+
+  button:disabled:hover {
+    cursor: not-allowed;
   }
 </style>
