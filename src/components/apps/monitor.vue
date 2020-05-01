@@ -41,19 +41,21 @@
                 </b-col>
                 <b-col>
                   <div style="text-align:right;">
-                    <b-button variant="outline-info" @click="recordRefresh" :disabled="recordLoading">
-                      刷新数据
+                    <b-button variant="outline-info" @click="recordRefresh" :disabled="recordLoading"
+                      :size="smallScreen?'sm':''">
+                      <b-icon-arrow-counterclockwise></b-icon-arrow-counterclockwise>
                     </b-button>
                     &nbsp;
-                    <b-button variant="outline-secondary" @click="recordPrev" :disabled="recordLoading">
+                    <b-button variant="outline-secondary" @click="recordPrev" :disabled="recordLoading"
+                      :size="smallScreen?'sm':''">
                       <b-icon-caret-left></b-icon-caret-left>
                     </b-button>
                     &nbsp;
-                    <b-button variant="outline-secondary" @click="recordNext" :disabled="recordLoading||isLastRecord">
+                    <b-button variant="outline-secondary" @click="recordNext" :disabled="recordLoading||isLastRecord"
+                      :size="smallScreen?'sm':''">
                       <b-icon-caret-right></b-icon-caret-right>
                     </b-button>
                   </div>
-
                 </b-col>
               </b-row>
             </b-card-title>
@@ -450,7 +452,6 @@
         this.getSavedData();
       },
       checkRecordUpdate(ts) {
-        console.log(this.recordUpdateCnt);
         if ((ts - this.lastRecordts) > RECORD_INTERVAL_SECONDS * (1 + this.recordUpdateCnt)) {
           this.recordUpdateCnt++;
           this.getSavedData();
