@@ -36,10 +36,10 @@
           <b-card style="margin-top:20px;">
             <b-card-title>
               <b-row>
-                <b-col>
+                <b-col md="6">
                   <span>数据记录</span>
                 </b-col>
-                <b-col>
+                <b-col md="6">
                   <div style="text-align:right;">
                     <b-button variant="outline-info" @click="recordRefresh" :disabled="recordLoading"
                       :size="smallScreen?'sm':''">
@@ -452,15 +452,17 @@
         this.getSavedData();
       },
       checkRecordUpdate(ts) {
-        if ((ts - this.lastRecordts) > RECORD_INTERVAL_SECONDS * (1 + this.recordUpdateCnt)) {
-          this.recordUpdateCnt++;
-          this.getSavedData();
-        } else {
-          if ((ts - this.lastRecordts) < RECORD_INTERVAL_SECONDS) {
-            this.recordUpdateCnt = 0;
+        let cur_date = new Date(ts * 1000).getUTCDate();
+        if (cur_date == this.recordDate) {
+          if ((ts - this.lastRecordts) > RECORD_INTERVAL_SECONDS * (1 + this.recordUpdateCnt)) {
+            this.recordUpdateCnt++;
+            this.getSavedData();
+          } else {
+            if ((ts - this.lastRecordts) < RECORD_INTERVAL_SECONDS) {
+              this.recordUpdateCnt = 0;
+            }
           }
         }
-
       },
       recordRefresh() {
         this.recordLoading = true;
@@ -504,6 +506,7 @@
 </script>
 
 <style scoped>
+
   .wCard1 {
     background: linear-gradient(45deg, #321fdb 0%, #1f1498 100%);
 

@@ -2,7 +2,7 @@
     <div>
         <!-- head -->
         <wHead />
-        
+
         <!-- content -->
         <b-container fluid style="padding-top:80px">
             <router-view />
@@ -21,6 +21,11 @@
     }
 </script>
 
-<style>
-
+<style scoped>
+    @media screen and (max-width:800px) {
+        .container-fluid {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
 </style>
