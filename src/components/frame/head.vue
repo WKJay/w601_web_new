@@ -7,7 +7,7 @@
 
             <b-collapse id="nav-collapse" is-nav>
                 <b-navbar-nav>
-                    <b-nav-item to="/monitor">数据监测</b-nav-item>
+                    <b-nav-item to="/monitor">环境监测</b-nav-item>
                     <b-nav-item to="/config">基本信息</b-nav-item>
                 </b-navbar-nav>
 
