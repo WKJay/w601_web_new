@@ -37,7 +37,7 @@
   export default {
     data() {
       return {
-        img: require('@/assets/imgs/W601.jpg'),
+        img: "https://s3.ax1x.com/2021/02/06/yYLRyD.jpg",
       }
     }
   }
