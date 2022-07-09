@@ -9,7 +9,7 @@ module.exports = {
     'resize-detector'
   ],
   devServer: {
-    proxy: 'http://192.168.31.10/'
+    proxy: 'http://192.168.2.10/'
   },
   configureWebpack: {
     plugins: [
