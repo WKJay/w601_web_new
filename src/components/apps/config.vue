@@ -34,28 +34,29 @@
 </template>
 
 <script>
-  export default {
-    data() {
-      return {
-        img: "https://s3.ax1x.com/2021/02/06/yYLRyD.jpg",
-      }
+export default {
+  data() {
+    return {
+      // img: "https://s3.ax1x.com/2021/02/06/yYLRyD.jpg",
+      img: require("@/assets/imgs/W601.jpg"),
     }
   }
+}
 </script>
 
 <style scoped>
-.card-text{
+.card-text {
   color: rgb(68, 66, 66);
 }
 
-.info{
+.info {
   margin: 0 auto;
   width: 70%;
   text-align: center;
 }
 
 @media screen and (max-width: 1000px) {
-  .info{
+  .info {
     width: 90%;
   }
 }
